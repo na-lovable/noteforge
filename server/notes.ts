@@ -1,19 +1,17 @@
 "use server";
 
 import { db } from "@/db/drizzle";
-import { InsertNotebook, notebook } from "@/db/schema";
+import { InsertNote, note } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { eq } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 
-export async function createNotebook(values: InsertNotebook) {
+export async function createNote(values: InsertNote) {
     try {
-        await db.insert(notebook).values(values);
-        // await revalidatePath("/dashboard");
-        return { success: true, message: "Notebook created successfully" };
+        await db.insert(note).values(values);
+        return { success: true, message: "Note created successfully" };
     } catch (error) {
-        return { success: false, message: "Failed to create notebook" }
+        return { success: false, message: "Failed to create note" }
     };
 };
 

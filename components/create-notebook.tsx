@@ -28,6 +28,7 @@ import { authClient } from "@/lib/auth-client"
 import { toast } from "sonner"
 import { useState } from "react"
 import { Input } from "./ui/input"
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
     name: z
@@ -36,7 +37,11 @@ const formSchema = z.object({
         .max(32, "Notebook name must be at most 32 characters."),
 })
 
-export function CreateNotebook() {
+export function CreateNotebook({
+    className,
+    ...props
+}: React.ComponentProps<"div">) {
+    const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const form = useForm<z.infer<typeof formSchema>>({
@@ -51,6 +56,8 @@ export function CreateNotebook() {
         const userId = (await authClient.getSession()).data?.user.id;
         if (!userId) {
             toast.error("You must be logged in to create a notebook");
+            setIsLoading(false)
+            setIsOpen(false);
             return;
         }
         const response = await createNotebook({
@@ -60,6 +67,9 @@ export function CreateNotebook() {
         if (response.success) {
             form.reset();
             toast.success(response.message);
+            setIsLoading(false);
+            setIsOpen(false);
+            router.refresh();
         } else {
             toast.error(response.message);
         }
