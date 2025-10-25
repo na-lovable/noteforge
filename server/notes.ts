@@ -15,56 +15,32 @@ export async function createNote(values: InsertNote) {
     };
 };
 
-export async function getNotebooksByUser() {
+export async function getNoteById(id: string) {
     try {
-        const session = await auth.api.getSession({
-            headers: await headers(),
-        });
-
-        const userId = session?.user?.id;
-
-        if (!userId) {
-            console.log("No one logged in")
-            return { success: false, message: "User not found" }
-        }
-
-        const notebooksByUser = await db
+        const noteById = await db
             .select()
-            .from(notebook)
-            .where(eq(notebook.userId, userId));
-
-        return { success: true, notebooks: notebooksByUser };
+            .from(note)
+            .where(eq(note.id, id));
+        return { success: true, note: noteById };
     } catch (error) {
-        return { success: false, message: "Failed to get notebooks" };
-    };
-};
-
-export async function getNotebookById(id: string) {
-    try {
-        const notebookById = await db
-            .select()
-            .from(notebook)
-            .where(eq(notebook.id, id));
-        return { success: true, notebook: notebookById };
-    } catch (error) {
-        return { success: false, message: "Failed to get notebook" };
+        return { success: false, message: "Failed to get note" };
     }
 }
 
-export async function updateNotebook(id: string, values: InsertNotebook) {
+export async function updateNote(id: string, values: InsertNote) {
     try {
-        db.update(notebook).set(values).where(eq(notebook.id, id));
-        return { success: true, message: "Notebook updated successfully" };
+        db.update(note).set(values).where(eq(note.id, id));
+        return { success: true, message: "Note updated successfully" };
     } catch (error) {
-        return { success: false, message: "Failed to update notebook" };
+        return { success: false, message: "Failed to update note" };
     }
 }
 
-export async function deleteNotebook(id: string, values: InsertNotebook) {
+export async function deleteNote(id: string, values: InsertNote) {
     try {
-        db.delete(notebook).where(eq(notebook.id, id));
-        return { success: true, message: "Notebook deleted successfully" };
+        db.delete(note).where(eq(note.id, id));
+        return { success: true, message: "Note deleted successfully" };
     } catch (error) {
-        return { success: false, message: "Failed to delete notebook" };
+        return { success: false, message: "Failed to delete note" };
     }
 }
