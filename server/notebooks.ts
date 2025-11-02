@@ -30,10 +30,12 @@ export async function getNotebooksByUser() {
             return { success: false, message: "User not found" }
         }
 
-        const notebooksByUser = await db
-            .select()
-            .from(notebook)
-            .where(eq(notebook.userId, userId));
+        const notebooksByUser = await db.query.notebook.findMany({
+            where: eq(notebook.userId, userId),
+            with: {
+                notes: true
+            }
+        });
 
         return { success: true, notebooks: notebooksByUser };
     } catch (error) {
@@ -43,10 +45,12 @@ export async function getNotebooksByUser() {
 
 export async function getNotebookById(id: string) {
     try {
-        const notebookById = await db
-            .select()
-            .from(notebook)
-            .where(eq(notebook.id, id));
+        const notebookById = await db.query.notebook.findFirst({
+            where: eq(notebook.id, id),
+            with: {
+                notes: true,
+            }
+        });
         return { success: true, notebook: notebookById };
     } catch (error) {
         return { success: false, message: "Failed to get notebook" };
@@ -62,9 +66,9 @@ export async function updateNotebook(id: string, values: InsertNotebook) {
     }
 }
 
-export async function deleteNotebook(id: string, values: InsertNotebook) {
+export async function deleteNotebook(id: string) {
     try {
-        db.delete(notebook).where(eq(notebook.id, id));
+        db.delete(notebook).where(eq(notebook.id, id)).execute();
         return { success: true, message: "Notebook deleted successfully" };
     } catch (error) {
         return { success: false, message: "Failed to delete notebook" };

@@ -17,10 +17,12 @@ export async function createNote(values: InsertNote) {
 
 export async function getNoteById(id: string) {
     try {
-        const noteById = await db
-            .select()
-            .from(note)
-            .where(eq(note.id, id));
+        const noteById = await db.query.note.findFirst({
+            where: eq(note.id, id),
+            with: {
+                notebook: true,
+            }
+        });
         return { success: true, note: noteById };
     } catch (error) {
         return { success: false, message: "Failed to get note" };
@@ -36,9 +38,9 @@ export async function updateNote(id: string, values: InsertNote) {
     }
 }
 
-export async function deleteNote(id: string, values: InsertNote) {
+export async function deleteNote(id: string) {
     try {
-        db.delete(note).where(eq(note.id, id));
+        db.delete(note).where(eq(note.id, id)).execute();
         return { success: true, message: "Note deleted successfully" };
     } catch (error) {
         return { success: false, message: "Failed to delete note" };

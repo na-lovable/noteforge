@@ -54,46 +54,75 @@ export const verification = pgTable("verification", {
   value: text("value").notNull(),
   expiresAt: timestamp("expires_at").notNull(),
   createdAt: timestamp("created_at").$defaultFn(
-    () => /* @__PURE__ */ new Date(),
+    () => /* @__PURE__ */ new Date()
   ),
   updatedAt: timestamp("updated_at").$defaultFn(
-    () => /* @__PURE__ */ new Date(),
+    () => /* @__PURE__ */ new Date()
   ),
 });
 
 export const notebook = pgTable("notebook", {
-  id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: text("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
-  userId: text("user_id").notNull().references(() => user.id, { onDelete: 'cascade' }),
-  createdAt: timestamp("created_at").$defaultFn(() => /* @__PURE__ */ new Date()),
-  updatedAt: timestamp("updated_at").$defaultFn(() => /* @__PURE__ */ new Date()),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").$defaultFn(
+    () => /* @__PURE__ */ new Date()
+  ),
+  updatedAt: timestamp("updated_at").$defaultFn(
+    () => /* @__PURE__ */ new Date()
+  ),
 });
 
 export const note = pgTable("note", {
-  id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: text("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   title: text("title").notNull(),
-  content: jsonb().notNull(),
-  notebookId: text("notebook_id").notNull().references(() => notebook.id, { onDelete: 'cascade' }),
-  createdAt: timestamp("created_at").$defaultFn(() => /* @__PURE__ */ new Date()),
-  updatedAt: timestamp("updated_at").$defaultFn(() => /* @__PURE__ */ new Date()),
+  content: text().notNull(),
+  notebookId: text("notebook_id")
+    .notNull()
+    .references(() => notebook.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").$defaultFn(
+    () => /* @__PURE__ */ new Date()
+  ),
+  updatedAt: timestamp("updated_at").$defaultFn(
+    () => /* @__PURE__ */ new Date()
+  ),
 });
 
 export const notebookRelations = relations(notebook, ({ many, one }) => ({
   notes: many(note),
   user: one(user, {
     fields: [notebook.userId],
-    references: [user.id]
-  })
+    references: [user.id],
+  }),
 }));
 
 export const noteRelations = relations(note, ({ one }) => ({
   notebook: one(notebook, {
     fields: [note.notebookId],
-    references: [notebook.id]
-  })
-}))
+    references: [notebook.id],
+  }),
+}));
 
+export type Notebook = typeof notebook.$inferSelect & {
+  notes: Note[];
+};
 export type InsertNotebook = typeof notebook.$inferInsert;
+export type Note = typeof note.$inferSelect;
 export type InsertNote = typeof note.$inferInsert;
 
-export const schema = { user, session, account, verification, notebook, note };
+export const schema = {
+  user,
+  session,
+  account,
+  verification,
+  notebook,
+  note,
+  notebookRelations,
+  noteRelations,
+};
