@@ -1,106 +1,146 @@
-'use server';
+"use server";
 
+import { db } from "@/db/drizzle";
 import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 export async function signInUser({
-    email,
-    password
+  email,
+  password,
 }: {
-    email: string,
-    password: string,
+  email: string;
+  password: string;
 }): Promise<{
-    success: Boolean,
-    message: string,
+  success: Boolean;
+  message: string;
 }> {
-    try {
-        await auth.api.signInEmail({
-            body: {
-                email,
-                password,
-            }, 
-        });
-        return { success: true, message: "Signed in successfully" };
-    } catch (error) {
-        const e = error as Error;
-        return { success: false, message: e.message || "Failed to sign in" };
-    }
-};
+  try {
+    await auth.api.signInEmail({
+      body: {
+        email,
+        password,
+      },
+    });
+    return { success: true, message: "Signed in successfully" };
+  } catch (error) {
+    const e = error as Error;
+    return { success: false, message: e.message || "Failed to sign in" };
+  }
+}
 
 export async function signUpUser({
-    name,
-    email,
-    password
+  name,
+  email,
+  password,
 }: {
-    name: string,
-    email: string,
-    password: string,
+  name: string;
+  email: string;
+  password: string;
 }): Promise<{
-    success: boolean,
-    message: string,
+  success: boolean;
+  message: string;
 }> {
-    try {
-        await auth.api.signUpEmail({
-            body: {
-                name,
-                email,
-                password
-            }
-        });
-        return { success: true, message: "Signed up successfully, please verify your email" };
-    } catch (error) {
-        const e = error as Error;
-        return { success: false, message: e.message || "Failed to sign up" };
-    }
-};
+  try {
+    await auth.api.signUpEmail({
+      body: {
+        name,
+        email,
+        password,
+      },
+    });
+    return {
+      success: true,
+      message: "Signed up successfully, please verify your email",
+    };
+  } catch (error) {
+    const e = error as Error;
+    return { success: false, message: e.message || "Failed to sign up" };
+  }
+}
 
 export async function requestForPasswordReset({
-    email,
-    redirectURL,
+  email,
+  redirectURL,
 }: {
-    email: string,
-    redirectURL: string,
+  email: string;
+  redirectURL: string;
 }): Promise<{
-    success: boolean,
-    message: string,
+  success: boolean;
+  message: string;
 }> {
-    try {
-        await auth.api.requestPasswordReset({
-            body: {
-                email: email,
-                redirectTo: redirectURL,
-            }
-        });
-        return { 
-            success: true, 
-            message: "Please check your email for password reset link" };
-    } catch (error) {
-        const e = error as Error;
-        return { success: false, message: e.message || "Failed to send password reset link" };
-    }
-};
+  try {
+    await auth.api.requestPasswordReset({
+      body: {
+        email: email,
+        redirectTo: redirectURL,
+      },
+    });
+    return {
+      success: true,
+      message: "Please check your email for password reset link",
+    };
+  } catch (error) {
+    const e = error as Error;
+    return {
+      success: false,
+      message: e.message || "Failed to send password reset link",
+    };
+  }
+}
 
 export async function serverResetPassword({
-    newPassword,
-    token,
+  newPassword,
+  token,
 }: {
-    newPassword: string,
-    token: string,
+  newPassword: string;
+  token: string;
 }): Promise<{
-    success: boolean,
-    message: string,
+  success: boolean;
+  message: string;
 }> {
-    try {
-        await auth.api.resetPassword({
-            body: {
-                newPassword: newPassword,
-                token: token,
-            }
-        });
-        return { 
-            success: true, 
-            message: "Password was reset successfully" };
-    } catch (error) {
-        const e = error as Error;
-        return { success: false, message: e.message || "Failed to reset password" };
-    }
-};
+  try {
+    await auth.api.resetPassword({
+      body: {
+        newPassword: newPassword,
+        token: token,
+      },
+    });
+    return {
+      success: true,
+      message: "Password was reset successfully",
+    };
+  } catch (error) {
+    const e = error as Error;
+    return { success: false, message: e.message || "Failed to reset password" };
+  }
+}
+
+export async function getAllUsers() {
+  try {
+    const allUsers = await db.query.user.findMany();
+    return allUsers;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+}
+
+export async function getCurrentUser() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  const user = session?.user;
+  return user;
+}
+
+export async function canRemoveMemeber() {
+  const permission = await auth.api.hasPermission({
+    headers: await headers(),
+    body: {
+      permissions: {
+        member: ["delete"], // This must match the structure in your access control
+      },
+    },
+  });
+  return permission;
+}

@@ -7,6 +7,7 @@ import { nextCookies } from "better-auth/next-js";
 import { Resend } from "resend";
 import VerificationEmail from "@/components/emails/verification-email";
 import PasswordResetEmail from "@/components/emails/reset-email";
+import { ac, admin, member, owner } from "./auth/permissions";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -44,5 +45,14 @@ export const auth = betterAuth({
     },
     sendOnSignUp: true,
   },
-  plugins: [organization(), nextCookies()] // make sure this is the last plugin in the array
+  plugins: [organization(
+    {
+            ac,
+            roles: {
+                owner,
+                admin,
+                member,
+            }
+        }
+  ), nextCookies()] // make sure this is the last plugin in the array
 });
