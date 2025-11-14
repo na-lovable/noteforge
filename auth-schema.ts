@@ -1,5 +1,4 @@
-import { relations, sql } from "drizzle-orm";
-import { pgTable, text, timestamp, boolean, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -28,6 +27,7 @@ export const session = pgTable("session", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   activeOrganizationId: text("active_organization_id"),
+  activeTeamId: text("active_team_id"),
 });
 
 export const account = pgTable("account", {
@@ -62,6 +62,27 @@ export const verification = pgTable("verification", {
     .notNull(),
 });
 
+export const team = pgTable("team", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  organizationId: text("organization_id")
+    .notNull()
+    .references(() => organization.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at"),
+});
+
+export const teamMember = pgTable("team_member", {
+  id: text("id").primaryKey(),
+  teamId: text("team_id")
+    .notNull()
+    .references(() => team.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at"),
+});
+
 export const organization = pgTable("organization", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
@@ -90,102 +111,10 @@ export const invitation = pgTable("invitation", {
     .references(() => organization.id, { onDelete: "cascade" }),
   email: text("email").notNull(),
   role: text("role"),
+  teamId: text("team_id"),
   status: text("status").default("pending").notNull(),
   expiresAt: timestamp("expires_at").notNull(),
   inviterId: text("inviter_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
 });
-
-export const notebook = pgTable("notebook", {
-  id: text("id")
-    .primaryKey()
-    .default(sql`gen_random_uuid()`),
-  name: text("name").notNull(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  createdAt: timestamp("created_at").$defaultFn(
-    () => /* @__PURE__ */ new Date()
-  ),
-  updatedAt: timestamp("updated_at").$defaultFn(
-    () => /* @__PURE__ */ new Date()
-  ),
-});
-
-export const note = pgTable("note", {
-  id: text("id")
-    .primaryKey()
-    .default(sql`gen_random_uuid()`),
-  title: text("title").notNull(),
-  content: text().notNull(),
-  notebookId: text("notebook_id")
-    .notNull()
-    .references(() => notebook.id, { onDelete: "cascade" }),
-  createdAt: timestamp("created_at").$defaultFn(
-    () => /* @__PURE__ */ new Date()
-  ),
-  updatedAt: timestamp("updated_at").$defaultFn(
-    () => /* @__PURE__ */ new Date()
-  ),
-});
-
-export const notebookRelations = relations(notebook, ({ many, one }) => ({
-  notes: many(note),
-  user: one(user, {
-    fields: [notebook.userId],
-    references: [user.id],
-  }),
-}));
-
-export const noteRelations = relations(note, ({ one }) => ({
-  notebook: one(notebook, {
-    fields: [note.notebookId],
-    references: [notebook.id],
-  }),
-}));
-
-export type Notebook = typeof notebook.$inferSelect & {
-  notes: Note[];
-};
-export type InsertNotebook = typeof notebook.$inferInsert;
-export type Note = typeof note.$inferSelect;
-export type InsertNote = typeof note.$inferInsert;
-export type User = typeof user.$inferSelect;
-
-export const team = pgTable("team", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
-  organizationId: text("organization_id")
-    .notNull()
-    .references(() => organization.id, { onDelete: "cascade" }),
-  createdAt: timestamp("created_at").notNull(),
-  updatedAt: timestamp("updated_at"),
-});
-
-export const teamMember = pgTable("team_member", {
-  id: text("id").primaryKey(),
-  teamId: text("team_id")
-    .notNull()
-    .references(() => team.id, { onDelete: "cascade" }),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  createdAt: timestamp("created_at"),
-});
-
-export const schema = {
-  user,
-  session,
-  account,
-  verification,
-  organization,
-  member,
-  invitation,
-  notebook,
-  note,
-  notebookRelations,
-  noteRelations,
-  team,
-  teamMember,
-};

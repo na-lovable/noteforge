@@ -1,5 +1,5 @@
 import { betterAuth } from "better-auth";
-import { organization } from "better-auth/plugins"
+import { organization } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "@/db/drizzle"; // your drizzle instance
 import { schema } from "@/db/schema";
@@ -13,18 +13,18 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const auth = betterAuth({
   socialProviders: {
-        google: { 
-            clientId: process.env.GOOGLE_CLIENT_ID as string, 
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET as string, 
-        }, 
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     },
+  },
   emailAndPassword: {
     enabled: true,
     sendResetPassword: async ({ user, url }) => {
       await resend.emails.send({
-        from: 'Naveen <welcome@learn.barrierenvelope.com>',
+        from: "Naveen <welcome@learn.barrierenvelope.com>",
         to: [user.email],
-        subject: 'Reset your password',
+        subject: "Reset your password",
         react: PasswordResetEmail({ userName: user.name, resetUrl: url }),
       });
     },
@@ -34,25 +34,31 @@ export const auth = betterAuth({
     schema,
   }),
   requireEmailVerification: true,
-  emailVerification: {  
+  emailVerification: {
     sendVerificationEmail: async ({ user, url }) => {
       await resend.emails.send({
-        from: 'Naveen <welcome@learn.barrierenvelope.com>',
+        from: "Naveen <welcome@learn.barrierenvelope.com>",
         to: [user.email],
-        subject: 'Verify your email address',
+        subject: "Verify your email address",
         react: VerificationEmail({ userName: user.name, verificationUrl: url }),
       });
     },
     sendOnSignUp: true,
   },
-  plugins: [organization(
-    {
-            ac,
-            roles: {
-                owner,
-                admin,
-                member,
-            }
-        }
-  ), nextCookies()] // make sure this is the last plugin in the array
+  plugins: [
+    organization({
+      ac,
+      roles: {
+        owner,
+        admin,
+        member,
+      },
+      teams: {
+        enabled: true,
+        maximumTeams: 10, // Optional: limit teams per organization
+        allowRemovingAllTeams: false, // Optional: prevent removing the last team
+      },
+    }),
+    nextCookies(),
+  ], // make sure this is the last plugin in the array
 });

@@ -1,4 +1,5 @@
 import { Logout } from "./logout";
+import { OrgSelect } from "./org-select";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -58,6 +59,7 @@ export default function PageWrapper({
           </BreadcrumbList>
         </Breadcrumb>
         </div>
+        <OrgSelect />
         <Logout />
       </header>
       {children}

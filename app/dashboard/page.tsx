@@ -15,7 +15,6 @@ export default function Page() {
         <CreateNotebook />
       </div>
       <OrgList />
-      <OrgSelect />
       <Notebooks className="p-4" />
     </PageWrapper>
   );

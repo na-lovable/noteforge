@@ -97,3 +97,118 @@ export async function addOrgMember({
   }
 }
 
+export async function createOrgTeam(teamName: string) {
+  try {
+    const data = await auth.api.createTeam({
+      body: {
+        name: teamName, // required
+        // organizationId: "organization-id",
+      },
+      headers: await headers(),
+    });
+    return { success: true, message: "Created team" };
+  } catch (error) {
+    console.log(error);
+    const e = error as Error;
+    return { success: false, message: e.message };
+  }
+}
+
+export async function getOrgTeams(orgId: string) {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+    if (!session) {
+      return { success: false, message: "Valid session not found" };
+    }
+    // const activeOrg = session.session.activeOrganizationId;
+    // if (!activeOrg) {
+    //   return { success: false, message: "No active org found" };
+    // }
+
+    const data = await auth.api.listOrganizationTeams({
+      query: {
+        organizationId: orgId,
+      },
+      // This endpoint requires session cookies.
+      headers: await headers(),
+    });
+
+    if (!data) {
+      return { success: false, message: "Failed to get teams" };
+    }
+
+    return { success: true, message: "Teams list fetched", teams: data };
+  } catch (error) {
+    console.log(error);
+    return { success: false, message: "Server error" };
+  }
+}
+
+export async function removeOrgTeam(teamId: string) {
+  try {
+    // const session = await auth.api.getSession({
+    //   headers: await headers(),
+    // });
+    // if (!session) {
+    //   return { success: false, message: "Valid session not found" };
+    // }
+    // const activeOrg = session.session.activeOrganizationId;
+    // if (!activeOrg) {
+    //   return { success: false, message: "No active org found" };
+    // }
+
+    const data = await auth.api.removeTeam({
+      body: {
+        teamId: teamId, // required
+        // organizationId: "organization-id",
+      },
+      headers: await headers(),
+    });
+
+    if (!data) {
+      return { success: false, message: "Failed to remove team" };
+    }
+    return { success: true, message: data.message };
+  } catch (error) {
+    console.log(error);
+    return { success: false, message: "Server error" };
+  }
+}
+
+export async function updateTeamAction({
+  teamId,
+  teamNewName,
+}: {
+  teamId: string;
+  teamNewName: string;
+}) {
+  try {
+    const data = await auth.api.updateTeam({
+      body: {
+        teamId: teamId, // required
+        data: {
+          // required
+          name: teamNewName,
+        },
+      },
+      // This endpoint requires session cookies.
+      headers: await headers(),
+    });
+    return {
+      success: true,
+      message: `Team name updated to "${teamNewName}" successfully`,
+    };
+  } catch (error) {
+    console.error("API Error: ", error);
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : "An unknown error occurred during team update.";
+    return {
+      success: false,
+      message: errorMessage,
+    };
+  }
+}
