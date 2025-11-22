@@ -10,6 +10,7 @@ import {
 } from "./ui/breadcrumb";
 import { Separator } from "./ui/separator";
 import { SidebarTrigger } from "./ui/sidebar";
+import { UserInfoCard } from "./user-info-card";
 
 interface PageWrapperProps {
   children: React.ReactNode;
@@ -60,6 +61,7 @@ export default function PageWrapper({
         </Breadcrumb>
         </div>
         <OrgSelect />
+        <UserInfoCard />
         <Logout />
       </header>
       {children}

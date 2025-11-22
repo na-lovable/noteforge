@@ -12,6 +12,10 @@ export const user = pgTable("user", {
     .defaultNow()
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
+  role: text("role"),
+  banned: boolean("banned").default(false),
+  banReason: text("ban_reason"),
+  banExpires: timestamp("ban_expires"),
 });
 
 export const session = pgTable("session", {
@@ -28,6 +32,7 @@ export const session = pgTable("session", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   activeOrganizationId: text("active_organization_id"),
+  activeTeamId: text("active_team_id"),
 });
 
 export const account = pgTable("account", {
@@ -90,6 +95,7 @@ export const invitation = pgTable("invitation", {
     .references(() => organization.id, { onDelete: "cascade" }),
   email: text("email").notNull(),
   role: text("role"),
+  teamId: text("team_id"),
   status: text("status").default("pending").notNull(),
   expiresAt: timestamp("expires_at").notNull(),
   inviterId: text("inviter_id")
@@ -173,6 +179,8 @@ export const teamMember = pgTable("team_member", {
     .references(() => user.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at"),
 });
+
+export type TeamMember = typeof teamMember.$inferSelect;
 
 export const schema = {
   user,

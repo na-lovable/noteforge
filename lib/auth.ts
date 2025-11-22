@@ -1,5 +1,5 @@
 import { betterAuth } from "better-auth";
-import { organization } from "better-auth/plugins";
+import { organization, admin } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "@/db/drizzle"; // your drizzle instance
 import { schema } from "@/db/schema";
@@ -7,7 +7,7 @@ import { nextCookies } from "better-auth/next-js";
 import { Resend } from "resend";
 import VerificationEmail from "@/components/emails/verification-email";
 import PasswordResetEmail from "@/components/emails/reset-email";
-import { ac, admin, member, owner } from "./auth/permissions";
+import { ac, orgAdmin, member, owner } from "./auth/permissions";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -50,7 +50,7 @@ export const auth = betterAuth({
       ac,
       roles: {
         owner,
-        admin,
+        orgAdmin,
         member,
       },
       teams: {
@@ -58,7 +58,44 @@ export const auth = betterAuth({
         maximumTeams: 10, // Optional: limit teams per organization
         allowRemovingAllTeams: false, // Optional: prevent removing the last team
       },
+      schema: {
+        organization: {
+          modelName: "organizations", //map the organization table to organizations
+          fields: {
+            name: "title", //map the name field to title
+          },
+          additionalFields: {
+            // Add a new field to the organization table
+            myCustomField: {
+              type: "string",
+              input: true,
+              required: false,
+            },
+          },
+        },
+        teamMember: {
+          modelName: "teamMembers",
+          additionalFields: {
+            teamRole: {
+              type: "string",
+              input: true,
+              required: false,
+            },
+          },
+        },
+        team: {
+          modelName: "teams",
+          additionalFields: {
+            teamRole: {
+              type: "string",
+              input: true,
+              required: false,
+            },
+          },
+        },
+      },
     }),
+    admin(),
     nextCookies(),
   ], // make sure this is the last plugin in the array
 });

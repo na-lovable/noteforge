@@ -12,16 +12,16 @@ const member = ac.newRole({
     project: ["create"], 
 }); 
 
-const admin = ac.newRole({ 
+const orgAdmin = ac.newRole({ 
     project: ["create", "update"],
     member: ['delete']
 }); 
 
 const owner = ac.newRole({ 
     project: ["create", "update", "delete"], 
-    member: ["delete"],
+    member: ["delete", "update"],
     organization: ["delete"],
     team: ["create", "delete", "update"],
-}); 
+});
 
-export {statement, ac, member, admin, owner};
+export {statement, ac, member, orgAdmin, owner};

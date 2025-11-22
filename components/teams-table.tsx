@@ -14,11 +14,18 @@ import {
 
 import { FullOrganizationType } from "@/server/organizations";
 import { UpdateTeamDialog } from "./update-team";
+import { SelectTeamMember } from "./select-team-member";
+import { getAllUsers } from "@/server/users";
+import TeamMemberCount from "./team-member-count";
+import Link from "next/link";
+import SetActiveTeam from "./set-active-team-button";
+
 export async function TeamsTable({
   orgData,
 }: {
   orgData: FullOrganizationType;
 }) {
+  const allUsers = await getAllUsers();
   if (!orgData) {
     return <>Unable to fetch org</>;
   }
@@ -43,16 +50,24 @@ export async function TeamsTable({
           {teamList.map((team) => (
             <TableRow key={team.id}>
               <TableCell className="font-medium">{orgData.name}</TableCell>
-              <TableCell>{team.name}</TableCell>
-              <TableCell>TBD</TableCell>
+              <TableCell>
+                <Link
+                  href={`/dashboard/organization/${orgData.slug}/team/${team.id}`}
+                >
+                  {team.name}
+                </Link>
+              </TableCell>
+              <TableCell>
+                <TeamMemberCount teamid={team.id} />
+              </TableCell>
               <TableCell className="text-right">
                 {team.createdAt.toDateString()}
               </TableCell>
               <TableCell className="text-right flex items-end gap-2 justify-end">
-                <UpdateTeamDialog teamId={team.id} teamName={team.name}/>
-                <RemoveTeamButton teamId={team.id}>
-                  Delete
-                </RemoveTeamButton>
+                <SetActiveTeam teamId={team.id}/>
+                <SelectTeamMember users={allUsers} teamId={team.id} />
+                <UpdateTeamDialog teamId={team.id} teamName={team.name} />
+                <RemoveTeamButton teamId={team.id}>Delete</RemoveTeamButton>
               </TableCell>
             </TableRow>
           ))}

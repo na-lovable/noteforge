@@ -1,9 +1,10 @@
 import { User } from "@/db/schema";
 import { Button } from "./ui/button";
 import AddMemberButton from "./add-member-button";
+import { UserWithRole } from "better-auth/plugins";
 
 interface AllUsersProps {
-  users: User[];
+  users: UserWithRole[];
   organizationId: string;
 }
 

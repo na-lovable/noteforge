@@ -122,11 +122,6 @@ export async function getOrgTeams(orgId: string) {
     if (!session) {
       return { success: false, message: "Valid session not found" };
     }
-    // const activeOrg = session.session.activeOrganizationId;
-    // if (!activeOrg) {
-    //   return { success: false, message: "No active org found" };
-    // }
-
     const data = await auth.api.listOrganizationTeams({
       query: {
         organizationId: orgId,
@@ -210,5 +205,77 @@ export async function updateTeamAction({
       success: false,
       message: errorMessage,
     };
+  }
+}
+
+export async function addTeamMemberAction({
+  teamId,
+  userId,
+}: {
+  teamId: string;
+  userId: string;
+}) {
+  try {
+    const data = await auth.api.addTeamMember({
+      body: {
+        teamId: teamId, // required
+        userId: userId, // required
+      },
+      headers: await headers(),
+    });
+    return { success: true, message: "Successfully added user to the team " };
+  } catch (error) {
+    console.log(error);
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : "An unknown error occured while adding the user to the team";
+    return { success: false, message: errorMessage };
+  }
+}
+
+export async function listTeamMembersAction(teamId: string) {
+  try {
+    const data = await auth.api.listTeamMembers({
+      query: {
+        teamId: teamId,
+      },
+      headers: await headers(),
+    });
+    
+    return { success: true, teamMembers: data };
+  } catch (error) {
+    console.log(error);
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : "An unknown error occured while fetching the list of users of the team";
+    return { success: false, message: errorMessage };
+  }
+}
+
+export async function removeTeamMemberAction({
+  teamId,
+  userId,
+}: {
+  teamId: string;
+  userId: string;
+}) {
+  try {
+    const data = await auth.api.removeTeamMember({
+      body: {
+        teamId: teamId, // required
+        userId: userId, // required
+      },
+      headers: await headers(),
+    });
+    return { success: true, message: "Successfully removed user from the team " };
+  } catch (error) {
+    console.log(error);
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : "An unknown error occured while removing the user from the team";
+    return { success: false, message: errorMessage };
   }
 }

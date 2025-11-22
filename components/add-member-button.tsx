@@ -7,9 +7,10 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
+import { UserWithRole } from "better-auth/plugins";
 
 interface AddMemberButtonProps {
-  user: User;
+  user: UserWithRole;
   organizationId: string;
 }
 
